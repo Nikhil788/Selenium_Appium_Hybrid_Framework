@@ -8,7 +8,9 @@
 
     <test name="Mobile App Login Tests" annotations="JDK" preserve-order="true">
         <classes>
-            <class name="com.appium.testcases.MainPageTests"/>
+<!--            <class name="com.appium.testcases.MainPageTests"/>-->
+            <!--<class name="com.appium.testcases.SelendroidTest"/>-->
+            <class name="com.appium.testcases.WhereIsMyTrainPageTests"/>
         </classes>
     </test>
 </suite>

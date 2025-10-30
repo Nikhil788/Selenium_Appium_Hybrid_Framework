@@ -1,9 +1,7 @@
 package com.appium.util;
 
 import com.appium.base.TestBase;
-import io.appium.java_client.AppiumDriver;
-import io.appium.java_client.MobileBy;
-import io.appium.java_client.MobileElement;
+import io.appium.java_client.AppiumBy;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.openqa.selenium.*;
@@ -12,6 +10,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -39,7 +38,7 @@ public class ReusableFunctions extends TestBase{
      * @return - it returns the boolean value for visibility of element
      */
     public static boolean waitForElementPresent(By locator){
-        WebDriverWait wait = new WebDriverWait(driver, timeoutValue());
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(timeoutValue()));
         boolean flag = true;
         try{
             wait.ignoring(StaleElementReferenceException.class).
@@ -56,8 +55,8 @@ public class ReusableFunctions extends TestBase{
      * @param element - parameter for mobile app element
      * @return - it returns the boolean value for visibility of element
      */
-    public static boolean waitForElementVisible(MobileElement element){
-        WebDriverWait wait = new WebDriverWait(driver, timeoutValue());
+    public static boolean waitForElementVisible(WebElement element){
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(timeoutValue()));
         boolean flag = true;
         try{
             wait.ignoring(StaleElementReferenceException.class).
@@ -75,7 +74,7 @@ public class ReusableFunctions extends TestBase{
      * @return - it returns the boolean value for visibility of element
      */
     public static boolean waitForElementVisible(By locator){
-        WebDriverWait wait = new WebDriverWait(driver, timeoutValue());
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(timeoutValue()));
         boolean flag = true;
         try{
             wait.ignoring(StaleElementReferenceException.class).
@@ -93,7 +92,7 @@ public class ReusableFunctions extends TestBase{
      * @return - it returns the boolean value for invisibility of element
      */
     public static boolean waitForInvisibilityOfElement(By locator){
-        WebDriverWait wait = new WebDriverWait(driver, timeoutValue());
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(timeoutValue()));
         boolean flag = true;
         try{
             wait.ignoring(StaleElementReferenceException.class).
@@ -111,7 +110,7 @@ public class ReusableFunctions extends TestBase{
      * @return - it returns the boolean value for element clickable condition
      */
     public static boolean waitForElementClickable(By locator){
-        WebDriverWait wait = new WebDriverWait(driver, timeoutValue());
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(timeoutValue()));
         boolean flag = true;
         try{
             wait.ignoring(StaleElementReferenceException.class).
@@ -154,7 +153,7 @@ public class ReusableFunctions extends TestBase{
     public static void enterText(By locator, String value){
         try{
             if (waitForElementPresent(locator)) {
-                MobileElement element = (MobileElement)driver.findElement(locator);
+                WebElement element =  driver.findElement(locator);
                 element.sendKeys(value);
                 logger.info("Entering text to element: " + locator.toString());
             }
@@ -162,6 +161,56 @@ public class ReusableFunctions extends TestBase{
             logger.error("Exception Occurred While Entering The Text: " + Ex.getMessage());
         }
 
+    }
+
+    public static void clearText(By locator){
+        try{
+            if (waitForElementPresent(locator)) {
+                WebElement element = driver.findElement(locator);
+                element.clear();
+                logger.info("Element text cleared: " + locator.toString());
+            }
+        }catch(Exception Ex) {
+            logger.error("Exception Occurred While Clearing The Text: " + Ex.getMessage());
+        }
+
+    }
+
+    public static void dropdownSelect(By locator, String value) {
+        try {
+            if (waitForElementPresent(locator)) {
+                WebElement element =  driver.findElement(locator);
+
+                // Assuming the dropdown is a standard mobile dropdown, you might need to click to open it
+                element.click();
+
+                // Find the dropdown option by visible text
+                By optionLocator = By.xpath("//android.widget.CheckedTextView[@resource-id='android:id/text1' and @text='" + value + "']");
+                waitForElementPresent(optionLocator);
+                WebElement optionElement =  driver.findElement(optionLocator);
+
+                optionElement.click();
+
+                logger.info("Selected option from dropdown: " + value);
+            }
+        } catch (Exception e) {
+            logger.error("Failed to select option from dropdown. Locator: " + locator.toString() + ", Value: " + value + ". Error: " + e.getMessage());
+        }
+    }
+
+    public static boolean selectionChecker(By locator){
+        boolean flag = false;
+        try{
+            if (waitForElementPresent(locator)) {
+                WebElement element = driver.findElement(locator);
+                flag = element.isSelected();
+                logger.info("Selection status generated for: "+locator.toString());
+            }
+        }
+        catch (Exception e) {
+            logger.error("Failed to check the selction status"+e.getMessage());
+        }
+        return flag;
     }
 
     /**
@@ -172,7 +221,7 @@ public class ReusableFunctions extends TestBase{
         try{
             if (waitForElementVisible(locator)) {
                 Thread.sleep(500);
-                MobileElement element = (MobileElement)driver.findElement(locator);
+                WebElement element = driver.findElement(locator);
                 element.sendKeys(Keys.ENTER);
                 Thread.sleep(500);
             }
@@ -188,7 +237,7 @@ public class ReusableFunctions extends TestBase{
     public static void mouseClick(By locator){
         try{
             if (waitForElementClickable(locator)){
-                MobileElement element = (MobileElement)driver.findElement(locator);
+                WebElement element = driver.findElement(locator);
                 element.click();
                 logger.info("Clicking on element: " + locator.toString());
             }
@@ -205,7 +254,7 @@ public class ReusableFunctions extends TestBase{
     public static void moveToElementAndClick(By locator, long timeout){
         try{
             if (waitForElementClickable(locator)){
-                MobileElement element = (MobileElement)driver.findElement(locator);
+                WebElement element = driver.findElement(locator);
                 Actions action = new Actions(driver);
                 action.moveToElement(element).wait(timeout);
                 action.click();
@@ -226,12 +275,77 @@ public class ReusableFunctions extends TestBase{
         String text = null;
         try{
             if (waitForElementPresent(locator)) {
-                MobileElement element = (MobileElement)driver.findElement(locator);
+                WebElement element = driver.findElement(locator);
                 text = element.getAttribute("value");
                 logger.info("Getting Text From locator: " + text);
             }
         }catch(Exception Ex) {
             logger.error("Exception Occurred While Getting The Text: " + Ex.getMessage());
+        }
+        return text;
+    }
+
+    public static String getTextByAttributeText(By locator){
+        String text = null;
+        try{
+            if (waitForElementPresent(locator)) {
+               WebElement element = driver.findElement(locator);
+                text = element.getAttribute("text");
+                logger.info("Getting Text From locator: " + text);
+            }
+        }catch(Exception Ex) {
+            logger.error("Exception Occurred While Getting The Text: " + Ex.getMessage());
+        }
+        return text;
+    }
+
+    //toast locator = android.widget.Toast
+    public static boolean locateToast(By locator){
+        boolean flag = true;
+        try{
+            if(waitForElementPresent(locator)){
+                WebElement element =  driver.findElement(locator);
+                logger.info("Toast detection : "+flag);
+            }
+        }
+        catch (Exception e){
+
+            flag = false;
+        }
+        return flag;
+    }
+
+    public static boolean locateToast() {
+        boolean flag = true;
+        try {
+            // Use XPath to find any toast element (toast element is identified as android.widget.Toast)
+            By toastLocator = AppiumBy.xpath("//android.widget.Toast");
+
+            // Wait for the toast element to be present
+            if (waitForElementPresent(toastLocator)) {
+                WebElement element = driver.findElement(toastLocator);
+                logger.info("Toast detected: " + flag);
+            }
+        } catch (Exception e) {
+            flag = false;
+            logger.error("Error while detecting toast: " + e.getMessage());
+        }
+        return flag;
+    }
+
+    public static String toastMessage(int toastNo){
+        String text = null;
+        try{
+            By toastLocator = AppiumBy.xpath("(//android.widget.Toast)"+"["+toastNo+"]");
+
+            if(waitForElementPresent(toastLocator)){
+                WebElement element = driver.findElement(toastLocator);
+                text = element.getAttribute("name");
+                logger.info("Text extracted from toast : "+text);
+            }
+        }
+        catch (Exception e){
+            logger.error("Unable to locate the toast.");
         }
         return text;
     }
@@ -245,7 +359,7 @@ public class ReusableFunctions extends TestBase{
         String text = null;
         try{
             if (waitForElementPresent(locator)) {
-                MobileElement element = (MobileElement)driver.findElement(locator);
+                WebElement element = driver.findElement(locator);
                 text = element.getText();
                 logger.info("Getting Text From locator: " + text);
             }
@@ -265,7 +379,8 @@ public class ReusableFunctions extends TestBase{
         String destination = null;
         try{
             String dateName = new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
-            TakesScreenshot ts = (TakesScreenshot) driver;
+           // TakesScreenshot ts = (TakesScreenshot) driver;
+            TakesScreenshot ts = driver;
             File source = ts.getScreenshotAs(OutputType.FILE);
 
             destination = System.getProperty("user.dir") + "/Screenshots/"+screenshotName+dateName+".png";
@@ -336,7 +451,7 @@ public class ReusableFunctions extends TestBase{
     public static void verticalSwipe(String scrollView, String className, String text){
 
         try {
-            driver.findElement(MobileBy.AndroidUIAutomator(
+            driver.findElement(AppiumBy.androidUIAutomator(
                     "new UiScrollable(new UiSelector().scrollable(true)" +
                             ".className(\"" + scrollView + "\")).scrollIntoView(new UiSelector()" +
                             ".className(\"" + className + "\").text(\"" + text + "\"))"));
@@ -356,7 +471,7 @@ public class ReusableFunctions extends TestBase{
      */
     public static void horizontalSwipe(String scrollView, String className, String text){
         try{
-            driver.findElement(MobileBy.AndroidUIAutomator(
+            driver.findElement(AppiumBy.androidUIAutomator(
                     "new UiScrollable(new UiSelector().scrollable(true)" +
                             ".className(\"" + scrollView + "\")).setAsHorizontalList().scrollIntoView(new UiSelector()" +
                             ".className(\"" + className + "\").text(\"" + text + "\"))"));

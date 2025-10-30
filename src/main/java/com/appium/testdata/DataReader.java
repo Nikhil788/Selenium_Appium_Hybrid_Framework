@@ -13,11 +13,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 public class DataReader extends TestBase {
+    private static XSSFWorkbook workbook;
 
     // Data Driven Testing Using "Test Case ID"
 
     private static XSSFWorkbook setExcelWorkbook(String testDataExcelFileName) {
-        String testDataExcelPath = null;
+        String testDataExcelPath = "";
         XSSFWorkbook excelWBook = null;
         if (Platform.getCurrent().toString().equalsIgnoreCase("MAC")) {
             testDataExcelPath = System.getProperty("user.dir") + "//src//main//resource//";
@@ -26,7 +27,7 @@ public class DataReader extends TestBase {
         }
 
         try {
-            FileInputStream ExcelFile = new FileInputStream(testDataExcelPath + testDataExcelFileName);
+            FileInputStream ExcelFile = new FileInputStream(System.getProperty("user.dir") + "\\src\\main\\resource\\" + testDataExcelFileName );
             excelWBook = new XSSFWorkbook(ExcelFile);
         } catch (Exception Ex) {
             Ex.printStackTrace();
@@ -35,6 +36,7 @@ public class DataReader extends TestBase {
     }
 
     private static XSSFSheet setExcelSheet(XSSFWorkbook workbook, String sheetName) {
+        DataReader.workbook = workbook;
         XSSFSheet excelWSheet = null;
         try {
             excelWSheet = workbook.getSheet(sheetName);
@@ -199,7 +201,7 @@ public class DataReader extends TestBase {
         return hashMap;
     }
 
-    public static Boolean isRunnable(String testCaseName, HashMap<String, HashMap<String, String>> testData){
+    /*public static Boolean isRunnable(String testCaseName, HashMap<String, HashMap<String, String>> testData){
         boolean flag = true;
         try{
             String runmodeValue = testData.get(testCaseName).get(prop.getProperty("RunmodeColumn"));
@@ -212,6 +214,40 @@ public class DataReader extends TestBase {
             Ex.printStackTrace();
         }
         return flag;
+    }*/
+
+    public static Boolean isRunnable(String testCaseName, HashMap<String, HashMap<String, String>> testData) {
+        boolean flag = true;
+
+        if (testData == null || testCaseName == null) {
+            System.err.println("Test data or test case name is null: " + testCaseName);
+            return false;
+        }
+
+        HashMap<String, String> testRow = testData.get(testCaseName);
+        if (testRow == null) {
+            System.err.println("No data found for test case: " + testCaseName);
+            return false;
+        }
+
+        String runmodeColumn = prop.getProperty("RunmodeColumn");
+        if (runmodeColumn == null) {
+            System.err.println("RunmodeColumn property not found in config");
+            return false;
+        }
+
+        String runmodeValue = testRow.get(runmodeColumn);
+        if (runmodeValue == null) {
+            System.err.println("Runmode value not found for test case: " + testCaseName);
+            return false;
+        }
+
+        if (runmodeValue.equalsIgnoreCase("N")) {
+            flag = false;
+        }
+
+        return flag;
     }
+
 
 }

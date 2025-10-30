@@ -1,9 +1,8 @@
 package com.appium.base;
 
-import io.appium.java_client.AppiumDriver;
-import io.appium.java_client.MobileElement;
+//import io.appium.java_client.AppiumDriver;
 import io.appium.java_client.android.AndroidDriver;
-import io.appium.java_client.ios.IOSDriver;
+import io.appium.java_client.android.options.UiAutomator2Options;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.openqa.selenium.remote.DesiredCapabilities;
@@ -12,13 +11,12 @@ import java.lang.invoke.MethodHandles;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Properties;
+import java.util.*;
 
 public class TestBase {
 
     public static Properties prop;
-    public static AppiumDriver driver;
+    public static AndroidDriver driver;
     private static Logger logger;
 
     static{
@@ -74,18 +72,19 @@ public class TestBase {
      * @throws MalformedURLException - In case of invalid appium server url
      */
     private static void androidSetup() throws MalformedURLException {
-        DesiredCapabilities caps = new DesiredCapabilities();
-        caps.setCapability("automationName", prop.getProperty("AutomationName"));
-        caps.setCapability("deviceName", prop.getProperty("DeviceName"));
-        caps.setCapability("udid", prop.getProperty("UDID"));
-        caps.setCapability("platformName", prop.getProperty("Platform"));
-        caps.setCapability("platformVersion", prop.getProperty("PlatformVersion"));
-        caps.setCapability("appPackage", prop.getProperty("AppPackage"));
-        caps.setCapability("appActivity", prop.getProperty("AppActivity"));
-        caps.setCapability("app", System.getProperty("user.dir") + "/Apps/" + prop.getProperty("AppName"));
-        caps.setCapability("noReset", prop.getProperty("NoReset"));
-        caps.setCapability("autoGrantPermissions", prop.getProperty("AutoGrantPermissions"));
-        driver = new AndroidDriver<MobileElement>(new URL(prop.getProperty("AppiumServer")), caps);
+       // DesiredCapabilities caps = new DesiredCapabilities();
+        UiAutomator2Options options = new UiAutomator2Options();
+        options.setCapability("automationName", prop.getProperty("AutomationName"));
+        options.setCapability("deviceName", prop.getProperty("DeviceName"));
+        options.setCapability("udid", prop.getProperty("UDID"));
+        options.setCapability("platformName", prop.getProperty("Platform"));
+        options.setCapability("platformVersion", prop.getProperty("PlatformVersion"));
+        options.setCapability("appPackage", prop.getProperty("AppPackage"));
+        options.setCapability("appActivity", prop.getProperty("AppActivity"));
+        options.setCapability("app", System.getProperty("user.dir") + "/Apps/" + prop.getProperty("AppName"));
+        options.setCapability("noReset", prop.getProperty("NoReset"));
+        options.setCapability("autoGrantPermissions", prop.getProperty("AutoGrantPermissions"));
+        driver = new AndroidDriver(new URL(prop.getProperty("AppiumServer")), options);
         logger.info("Starting Android Driver.");
     }
 
@@ -110,8 +109,27 @@ public class TestBase {
     private static void iosSetup() throws MalformedURLException{
         DesiredCapabilities caps = new DesiredCapabilities();
         // To be implemented
-        driver = new IOSDriver(new URL("http://127.0.0.1:4723/wd/hub"), caps);
-        logger.info("Starting IOS Driver.");
+        //driver = new IOSDriver(new URL("http://127.0.0.1:4723/wd/hub"), caps);
+        //logger.info("Starting IOS Driver.");
     }
+
+    public static void resetApp(AndroidDriver driver) {
+        String appPackage = prop.getProperty("AppPackage");
+        if (driver.isAppInstalled(appPackage)) {
+            driver.terminateApp(appPackage);
+        }
+
+        try {
+            Map<String, Object> args = new HashMap<>();
+            args.put("command", "pm");
+            args.put("args", Arrays.asList("clear", appPackage));
+            driver.executeScript("mobile: shell", args);
+        } catch (Exception e) {
+            System.out.println("Failed to clear app data: " + e.getMessage());
+        }
+        driver.activateApp(appPackage);
+    }
+
+
 
 }

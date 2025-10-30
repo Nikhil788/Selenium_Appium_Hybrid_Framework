@@ -17,6 +17,7 @@ import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.testng.asserts.SoftAssert;
+
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -36,7 +37,7 @@ public class MainPageTests extends TestBase {
     @BeforeMethod
     public static void setUp(Method method) throws IOException {
         driverInitialization();
-        driver.resetApp();
+        resetApp(driver);
         _softAssert = new SoftAssert();
         testCaseName = method.getName();
         extent = ExtentManager.getReporter();
@@ -82,7 +83,7 @@ public class MainPageTests extends TestBase {
         }
 
         if (driver != null) {
-            driver.resetApp();
+            resetApp(driver);
         }
     }
     @AfterTest
