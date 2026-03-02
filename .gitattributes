@@ -1,0 +1,10 @@
+# Force GitHub to recognize Java files
+*.java linguist-language=Java
+
+# Optional: XML and properties files
+*.xml linguist-language=XML
+*.properties linguist-language=Properties
+
+# Optional: Ignore generated HTML reports in language stats
+*.html linguist-generated=true
+*.json linguist-generated=true
